@@ -330,6 +330,11 @@
       border-collapse: collapse;
     }
 
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
     .listing-table th,
     .listing-table td {
       padding: 15px 12px;
@@ -393,6 +398,24 @@
     .price-col {
       font-weight: 800;
       color: var(--primary-dark);
+      white-space: nowrap;
+    }
+
+    .buyer-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #ecfeff;
+      color: #0f766e;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .date-col {
+      color: var(--muted);
+      font-size: 13px;
       white-space: nowrap;
     }
 
@@ -501,6 +524,10 @@
             <span>My Listings</span>
             <small>{{ printers|length }}</small>
           </a>
+          <a href="#sales-history">
+            <span>Sales History</span>
+            <small>{{ seller_orders|length }}</small>
+          </a>
           <a href="/add/">
             <span>Add Printer</span>
             <small>New</small>
@@ -523,8 +550,8 @@
           <span>Total active listings in your seller account.</span>
         </div>
         <div class="mini-stat-card">
-          <strong>Live</strong>
-          <span>Your inbox and listings stay reachable from the same sidebar shell.</span>
+          <strong>{{ seller_orders|length }}</strong>
+          <span>Total completed orders across all your printer listings.</span>
         </div>
         <p class="sidebar-note">This seller dashboard now mirrors the buyer layout so the workspace feels consistent across roles.</p>
       </section>
@@ -546,8 +573,8 @@
             <span>Printers listed</span>
           </div>
           <div class="stat-tile">
-            <strong>Fast</strong>
-            <span>Sidebar navigation</span>
+            <strong>{{ seller_orders|length }}</strong>
+            <span>Orders completed</span>
           </div>
           <div class="stat-tile">
             <strong>Stable</strong>
@@ -574,6 +601,7 @@
         </div>
 
         {% if printers %}
+        <div class="table-wrap">
         <table class="listing-table">
           <thead>
             <tr>
@@ -604,10 +632,61 @@
             {% endfor %}
           </tbody>
         </table>
+        </div>
         {% else %}
         <div class="empty">
           <p>You have not listed any printers yet.</p>
           <a href="/add/">Add Your First Printer</a>
+        </div>
+        {% endif %}
+      </section>
+
+      <section id="sales-history" class="panel section-card">
+        <div class="section-head">
+          <div>
+            <h3>Sales History</h3>
+            <p>See who bought or rented your printers, along with order time and amount.</p>
+          </div>
+          <div class="count-pill">{{ seller_orders|length }} order{{ seller_orders|length|pluralize }}</div>
+        </div>
+
+        {% if seller_orders %}
+        <div class="table-wrap">
+          <table class="listing-table">
+            <thead>
+              <tr>
+                <th>Buyer</th>
+                <th>Printer</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Ordered On</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for o in seller_orders %}
+              <tr>
+                <td><span class="buyer-chip">{{ o.buyer.username }}</span></td>
+                <td>
+                  <div class="printer-meta">
+                    <strong>{{ o.printer.name }}</strong>
+                    <span>{{ o.printer.model }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="type-badge {% if o.printer.type == 'sale' %}type-sale{% else %}type-rent{% endif %}">
+                    {% if o.printer.type == 'sale' %}For Sale{% else %}For Rent{% endif %}
+                  </span>
+                </td>
+                <td class="price-col">&#8377;{{ o.printer.price }}</td>
+                <td class="date-col">{{ o.ordered_at|date:"d M Y, h:i A" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty">
+          <p>No orders yet. When buyers confirm payment, orders will appear here.</p>
         </div>
         {% endif %}
       </section>

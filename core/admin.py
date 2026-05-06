@@ -56,7 +56,7 @@ class ProfileAdmin(admin.ModelAdmin):
 
 @admin.register(Printer)
 class PrinterAdmin(admin.ModelAdmin):
-	list_display = ('name', 'model', 'type', 'price', 'seller')
+	list_display = ('name', 'model', 'type', 'price', 'seller', 'payment_qr')
 	list_filter = ('type',)
 	search_fields = ('name', 'model', 'seller__username')
 

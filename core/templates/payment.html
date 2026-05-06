@@ -1,4 +1,3 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -129,7 +128,9 @@
     <div class="amount">&#8377;{{ printer.price }}</div>
 
     <div class="qr-wrap">
-      <img src="{% static 'core/scanner.jpeg' %}" alt="UPI QR Code" />
+      {% if printer.payment_qr %}
+        <img src="{{ printer.payment_qr.url }}" alt="Seller UPI QR Code" />
+      {% endif %}
     </div>
 
     <p class="qr-hint">Scan with PhonePe / GPay / Paytm / any UPI app</p>
@@ -142,10 +143,14 @@
       4. Complete the payment, then click below
     </div>
 
-    <form method="POST">
-      {% csrf_token %}
-      <button type="submit">&#10003; I Have Paid — Confirm Order</button>
-    </form>
+    {% if printer.payment_qr %}
+      <form method="POST">
+        {% csrf_token %}
+        <button type="submit">&#10003; I Have Paid — Confirm Order</button>
+      </form>
+    {% else %}
+      <p class="subtitle" style="margin-bottom:0;color:#b91c1c;">Seller payment QR is unavailable for this listing.</p>
+    {% endif %}
 
     <a href="/dashboard/" class="back-link">&#8592; Back to Dashboard</a>
   </div>

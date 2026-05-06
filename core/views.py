@@ -209,20 +209,32 @@ def dashboard(request):
 @seller_required
 def seller_dashboard(request):
     printers = Printer.objects.filter(seller=request.user)
-    return render(request, 'seller_dashboard.html', {'printers': printers})
+    seller_orders = Order.objects.filter(
+        printer__seller=request.user
+    ).select_related('buyer', 'printer')
+    return render(request, 'seller_dashboard.html', {
+        'printers': printers,
+        'seller_orders': seller_orders,
+    })
 
 
 # Add printer (Seller only)
 @seller_required
 def add_printer(request):
     if request.method == 'POST':
+        payment_qr = request.FILES.get('payment_qr')
+        if not payment_qr:
+            messages.error(request, 'Please upload your payment QR code for this listing.')
+            return render(request, 'add_printer.html')
+
         Printer.objects.create(
             seller=request.user,
             name=request.POST['name'],
             model=request.POST['model'],
             type=request.POST['type'],
             price=request.POST['price'],
-            image=request.FILES['image']
+            image=request.FILES['image'],
+            payment_qr=payment_qr,
         )
         messages.success(request, 'Printer added successfully.')
         return redirect('seller_dashboard')
@@ -234,6 +246,10 @@ def add_printer(request):
 @buyer_required
 def pay_order(request, printer_id):
     printer = get_object_or_404(Printer, id=printer_id)
+    if not printer.payment_qr:
+        messages.error(request, 'Seller QR code is not available for this printer yet.')
+        return redirect('dashboard')
+
     if request.method == 'POST':
         order = Order.objects.create(buyer=request.user, printer=printer)
         return redirect('order_confirmation', order_id=order.id)
