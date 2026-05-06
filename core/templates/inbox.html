@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Inbox - Printer Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: white;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .btn-back {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .btn-logout {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 28px auto;
+      padding: 0 16px 24px;
+    }
+
+    .heading {
+      margin-bottom: 14px;
+    }
+
+    .heading h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .heading p {
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .layout {
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.07);
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+
+    .conversation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .conversation:hover {
+      background: #f8fbff;
+    }
+
+    .conversation:last-child {
+      border-bottom: none;
+    }
+
+    .left {
+      min-width: 0;
+    }
+
+    .name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .snippet {
+      color: #64748b;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 560px;
+    }
+
+    .right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .time {
+      color: #94a3b8;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .unread {
+      display: inline-flex;
+      min-width: 22px;
+      height: 22px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #2563eb;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 0 6px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 70px 20px;
+      color: #94a3b8;
+    }
+
+    .empty p {
+      margin-top: 8px;
+      font-size: 15px;
+    }
+
+    .alert {
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      color: #9a3412;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/" class="logo">🖨️ Printer Hub</a>
+    <div class="nav-actions">
+      <a href="{{ back_url }}" class="btn btn-back">Back</a>
+      <a href="/logout/" class="btn btn-logout">Logout</a>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="heading">
+      <h1>Inbox</h1>
+      <p>All your conversations in one place</p>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="layout">
+      {% if conversations %}
+        {% for convo in conversations %}
+          <a class="conversation" href="/chat/{{ convo.user.id }}/">
+            <div class="left">
+              <div class="name">{{ convo.user.username }}</div>
+              <div class="snippet">{{ convo.last_message.body }}</div>
+            </div>
+            <div class="right">
+              <div class="time">{{ convo.last_message.created_at|date:'M d, h:i A' }}</div>
+              {% if convo.unread_count %}<span class="unread">{{ convo.unread_count }}</span>{% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      {% else %}
+        <div class="empty">
+          <div style="font-size: 44px;">Chat</div>
+          <p>No conversations yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- WhatsApp Float -->
+  <a href="https://wa.me/919182829546" target="_blank" title="Chat on WhatsApp" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;justify-content:center;width:58px;height:58px;background:#25d366;border-radius:50%;box-shadow:0 4px 18px rgba(37,211,102,0.5);text-decoration:none;font-size:30px;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.13)';this.style.boxShadow='0 6px 24px rgba(37,211,102,0.65)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(37,211,102,0.5)'">💬</a>
+
+</body>
+</html>

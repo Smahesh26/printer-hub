@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Seller Dashboard - Printer Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #dbe4ee;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --seller: #0f766e;
+      --seller-soft: #ecfeff;
+      --danger-soft: #fee2e2;
+      --danger-text: #b91c1c;
+      --shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.10), transparent 30%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    a { color: inherit; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 24px;
+      backdrop-filter: blur(10px);
+      background: rgba(248, 250, 252, 0.88);
+      border-bottom: 1px solid rgba(219, 228, 238, 0.9);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      background: linear-gradient(135deg, #ccfbf1, #99f6e4);
+      color: #0f766e;
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .brand p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .user-chip,
+    .role-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--border);
+      color: #334155;
+    }
+
+    .role-chip {
+      background: #ecfeff;
+      color: #0f766e;
+      border-color: #99f6e4;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.09);
+    }
+
+    .action-primary {
+      background: linear-gradient(135deg, var(--primary), #0f766e);
+      color: #fff;
+    }
+
+    .action-soft {
+      background: var(--seller-soft);
+      border-color: #99f6e4;
+      color: var(--seller);
+    }
+
+    .action-danger {
+      background: var(--danger-soft);
+      color: var(--danger-text);
+      border-color: #fecaca;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 24px;
+      padding: 24px;
+      align-items: start;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 96px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(219, 228, 238, 0.92);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar-panel,
+    .hero,
+    .section-card {
+      padding: 20px;
+    }
+
+    .sidebar-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #94a3b8;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .menu {
+      display: grid;
+      gap: 8px;
+    }
+
+    .menu a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .menu a:hover {
+      background: var(--surface-soft);
+    }
+
+    .menu a.active {
+      background: linear-gradient(135deg, var(--primary), #0f766e);
+      color: #fff;
+    }
+
+    .menu small {
+      font-size: 11px;
+      opacity: 0.72;
+    }
+
+    .mini-stat {
+      display: grid;
+      gap: 14px;
+    }
+
+    .mini-stat-card {
+      padding: 16px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #f4fffe, #ecfeff);
+      border: 1px solid #b6f5ee;
+    }
+
+    .mini-stat-card strong {
+      display: block;
+      font-size: 28px;
+      color: var(--seller);
+      margin-bottom: 6px;
+    }
+
+    .mini-stat-card span,
+    .sidebar-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .content {
+      display: grid;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .hero-top,
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .eyebrow,
+    .count-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow {
+      background: #ecfeff;
+      color: #0f766e;
+      margin-bottom: 12px;
+    }
+
+    .count-pill {
+      background: #dbeafe;
+      color: var(--primary-dark);
+    }
+
+    .hero h2 {
+      font-size: clamp(28px, 4vw, 36px);
+      line-height: 1.08;
+      margin-bottom: 8px;
+    }
+
+    .hero p,
+    .section-head p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+      max-width: 720px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .stat-tile {
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+    }
+
+    .stat-tile strong {
+      display: block;
+      font-size: 28px;
+      margin-bottom: 4px;
+      color: var(--seller);
+    }
+
+    .stat-tile span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .flash-success {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid #86efac;
+      background: #ecfdf5;
+      color: #166534;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .listing-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .listing-table th,
+    .listing-table td {
+      padding: 15px 12px;
+      border-bottom: 1px solid #eaf0f6;
+      text-align: left;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .listing-table th {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      background: #f8fafc;
+    }
+
+    .listing-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .printer-cell {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 220px;
+    }
+
+    .thumb {
+      width: 58px;
+      height: 58px;
+      object-fit: cover;
+      border-radius: 14px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+
+    .printer-meta strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .printer-meta span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .type-sale { background: #dcfce7; color: #15803d; }
+    .type-rent { background: #fef3c7; color: #92400e; }
+
+    .price-col {
+      font-weight: 800;
+      color: var(--primary-dark);
+      white-space: nowrap;
+    }
+
+    .empty {
+      padding: 52px 20px;
+      text-align: center;
+      color: #94a3b8;
+      border: 1px dashed #cbd5e1;
+      border-radius: 16px;
+      background: #fbfdff;
+    }
+
+    .empty p {
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .empty a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 18px;
+      border-radius: 12px;
+      text-decoration: none;
+      background: linear-gradient(135deg, var(--primary), #0f766e);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    @media (max-width: 1120px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .topbar {
+        padding: 14px 16px;
+        align-items: flex-start;
+      }
+
+      .topbar-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .shell {
+        padding: 16px;
+      }
+
+      .listing-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .hero,
+      .section-card,
+      .sidebar-panel {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="/" class="brand">
+      <div class="brand-mark">🖨️</div>
+      <div>
+        <h1>Printer Hub</h1>
+        <p>Seller workspace</p>
+      </div>
+    </a>
+
+    <div class="topbar-actions">
+      <span class="user-chip">{{ request.user.username }}</span>
+      <span class="role-chip">Seller</span>
+      <a href="/inbox/" class="action-btn action-soft">Inbox</a>
+      <a href="/add/" class="action-btn action-primary">Add Printer</a>
+      <a href="/logout/" class="action-btn action-danger">Logout</a>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <section class="panel sidebar-panel">
+        <div class="sidebar-label">Navigation</div>
+        <nav class="menu">
+          <a href="/seller/" class="active">
+            <span>My Listings</span>
+            <small>{{ printers|length }}</small>
+          </a>
+          <a href="/add/">
+            <span>Add Printer</span>
+            <small>New</small>
+          </a>
+          <a href="/inbox/">
+            <span>Messages</span>
+            <small>Inbox</small>
+          </a>
+          <a href="/">
+            <span>Marketplace Home</span>
+            <small>Public</small>
+          </a>
+        </nav>
+      </section>
+
+      <section class="panel sidebar-panel mini-stat">
+        <div class="sidebar-label">Overview</div>
+        <div class="mini-stat-card">
+          <strong>{{ printers|length }}</strong>
+          <span>Total active listings in your seller account.</span>
+        </div>
+        <div class="mini-stat-card">
+          <strong>Live</strong>
+          <span>Your inbox and listings stay reachable from the same sidebar shell.</span>
+        </div>
+        <p class="sidebar-note">This seller dashboard now mirrors the buyer layout so the workspace feels consistent across roles.</p>
+      </section>
+    </aside>
+
+    <main class="content">
+      <section class="panel hero">
+        <div class="hero-top">
+          <div>
+            <span class="eyebrow">Dashboard</span>
+            <h2>Manage listings, keep chat close, and maintain a steady workflow.</h2>
+            <p>The seller dashboard now follows the same lean structure as the buyer side, with a sidebar-first layout, cleaner spacing, and more predictable actions.</p>
+          </div>
+          <div class="count-pill">{{ printers|length }} listing{{ printers|length|pluralize }}</div>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-tile">
+            <strong>{{ printers|length }}</strong>
+            <span>Printers listed</span>
+          </div>
+          <div class="stat-tile">
+            <strong>Fast</strong>
+            <span>Sidebar navigation</span>
+          </div>
+          <div class="stat-tile">
+            <strong>Stable</strong>
+            <span>Responsive layout</span>
+          </div>
+        </div>
+      </section>
+
+      {% if messages %}
+        {% for message in messages %}
+          {% if message.tags == 'success' %}
+            <div class="flash-success">{{ message }}</div>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+
+      <section class="panel section-card">
+        <div class="section-head">
+          <div>
+            <h3>My Listings</h3>
+            <p>Review every listed printer with a clearer table and the same layout language used in the buyer dashboard.</p>
+          </div>
+          <a href="/add/" class="action-btn action-primary">+ Add Printer</a>
+        </div>
+
+        {% if printers %}
+        <table class="listing-table">
+          <thead>
+            <tr>
+              <th>Printer</th>
+              <th>Type</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in printers %}
+            <tr>
+              <td>
+                <div class="printer-cell">
+                  <img class="thumb" src="{{ p.image.url }}" alt="{{ p.name }}">
+                  <div class="printer-meta">
+                    <strong>{{ p.name }}</strong>
+                    <span>{{ p.model }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="type-badge {% if p.type == 'sale' %}type-sale{% else %}type-rent{% endif %}">
+                  {% if p.type == 'sale' %}For Sale{% else %}For Rent{% endif %}
+                </span>
+              </td>
+              <td class="price-col">&#8377;{{ p.price }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty">
+          <p>You have not listed any printers yet.</p>
+          <a href="/add/">Add Your First Printer</a>
+        </div>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+
+  <a href="https://wa.me/919182829546" target="_blank" title="Chat on WhatsApp" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;justify-content:center;width:58px;height:58px;background:#25d366;border-radius:50%;box-shadow:0 4px 18px rgba(37,211,102,0.5);text-decoration:none;font-size:30px;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.13)';this.style.boxShadow='0 6px 24px rgba(37,211,102,0.65)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(37,211,102,0.5)'">💬</a>
+</body>
+</html>

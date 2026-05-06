@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Us - Printer Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #f0f4ff; color: #1e293b; }
+
+    /* NAVBAR */
+    .navbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px; background: #fff;
+      box-shadow: 0 2px 8px rgba(79,70,229,0.08);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-size: 20px; font-weight: 700; color: #4f46e5; }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a { text-decoration: none; color: #475569; font-size: 15px; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: #4f46e5; }
+    .nav-btn { background: linear-gradient(135deg,#4f46e5,#7c3aed); color: #fff !important; padding: 8px 20px; border-radius: 8px; }
+    .nav-btn:hover { opacity: 0.9; }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: #fff; text-align: center; padding: 64px 40px 56px;
+    }
+    .hero h1 { font-size: 36px; font-weight: 700; margin-bottom: 12px; }
+    .hero p { font-size: 17px; opacity: 0.85; max-width: 520px; margin: 0 auto; }
+
+    /* LAYOUT */
+    .container { max-width: 1000px; margin: 0 auto; padding: 60px 24px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
+
+    /* CONTACT CARDS */
+    .info-section { display: flex; flex-direction: column; gap: 20px; }
+    .info-card {
+      background: #fff; border-radius: 14px; padding: 24px 22px;
+      box-shadow: 0 2px 12px rgba(79,70,229,0.08);
+      display: flex; align-items: flex-start; gap: 16px;
+    }
+    .info-card .icon-box {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: linear-gradient(135deg,#4f46e5,#7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .info-card .text h3 { font-size: 15px; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
+    .info-card .text p, .info-card .text a {
+      font-size: 14px; color: #64748b; text-decoration: none; line-height: 1.6;
+    }
+    .info-card .text a:hover { color: #4f46e5; }
+
+    /* WHATSAPP CARD */
+    .whatsapp-card {
+      background: linear-gradient(135deg,#25d366,#128c7e);
+      border-radius: 14px; padding: 28px 24px;
+      box-shadow: 0 4px 16px rgba(37,211,102,0.25);
+      display: flex; align-items: center; gap: 18px;
+      text-decoration: none; color: #fff;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .whatsapp-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(37,211,102,0.35); }
+    .whatsapp-card .wa-icon { font-size: 40px; flex-shrink: 0; }
+    .whatsapp-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .whatsapp-card p { font-size: 14px; opacity: 0.9; margin-bottom: 6px; }
+    .whatsapp-card .num { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+
+    /* FORM */
+    .form-card {
+      background: #fff; border-radius: 14px; padding: 36px 32px;
+      box-shadow: 0 2px 12px rgba(79,70,229,0.08);
+    }
+    .form-card h2 { font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+    .form-card .sub { font-size: 14px; color: #64748b; margin-bottom: 28px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid #e2e8f0; border-radius: 8px;
+      font-size: 14px; font-family: inherit;
+      outline: none; background: #f8fafc;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: #4f46e5; background: #fff;
+    }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+    .btn-submit {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg,#4f46e5,#7c3aed);
+      color: #fff; font-size: 15px; font-weight: 600;
+      border: none; border-radius: 10px; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-submit:hover { opacity: 0.9; }
+
+    .success-msg {
+      display: none; background: #dcfce7; color: #166534;
+      border: 1px solid #86efac; border-radius: 8px;
+      padding: 12px 16px; font-size: 14px; margin-top: 16px; text-align: center;
+    }
+
+    /* FOOTER */
+    .footer { background: #1e293b; color: #94a3b8; padding: 48px 40px 24px; margin-top: 60px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; max-width: 1200px; margin: 0 auto 32px; }
+    .footer-brand .logo { color: #fff; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+    .footer-brand p { font-size: 13px; line-height: 1.7; }
+    .footer-col h4 { color: #fff; font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 8px; }
+    .footer-col ul li a { color: #94a3b8; font-size: 13px; text-decoration: none; }
+    .footer-col ul li a:hover { color: #fff; }
+    .footer-divider { border: none; border-top: 1px solid #334155; margin: 0 auto; max-width: 1200px; }
+    .footer-bottom { max-width: 1200px; margin: 20px auto 0; text-align: center; font-size: 13px; }
+
+    @media(max-width:768px) {
+      .navbar { padding: 14px 20px; }
+      .hero { padding: 48px 20px; }
+      .container { padding: 40px 16px; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+    }
+    @media(max-width:480px) { .footer-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="logo">🖨️ Printer Hub</div>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/printers/">Printers</a>
+      <a href="/about/">About</a>
+      <a href="/contact/" class="active">Contact</a>
+      {% if user.is_authenticated %}
+        <a href="{% if user.profile.user_type == 'seller' %}/seller/{% else %}/dashboard/{% endif %}" class="nav-btn">Dashboard</a>
+      {% else %}
+        <a href="/login/" class="nav-btn">Login</a>
+        <a href="/signup/" class="nav-btn">Signup</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>Contact Us</h1>
+    <p>We're here to help. Reach out via WhatsApp, email, or fill in the form and we'll get back to you.</p>
+  </div>
+
+  <div class="container">
+    <div class="grid-2">
+
+      <!-- LEFT: Contact Info -->
+      <div class="info-section">
+
+        <!-- WhatsApp CTA -->
+        <a href="https://wa.me/919182829546" target="_blank" class="whatsapp-card">
+          <div class="wa-icon">💬</div>
+          <div>
+            <h3>Chat on WhatsApp</h3>
+            <p>Fastest way to reach us — we reply within minutes!</p>
+            <div class="num">+91 91828 29546</div>
+          </div>
+        </a>
+
+        <!-- Phone -->
+        <div class="info-card">
+          <div class="icon-box">📞</div>
+          <div class="text">
+            <h3>Phone</h3>
+            <a href="tel:+919182829546">+91 91828 29546</a>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="info-card">
+          <div class="icon-box">✉️</div>
+          <div class="text">
+            <h3>Email</h3>
+            <a href="mailto:support@printerhub.in">support@printerhub.in</a>
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="info-card">
+          <div class="icon-box">📍</div>
+          <div class="text">
+            <h3>Office Address</h3>
+            <p>42 Tech Park, Koramangala<br/>Bangalore, Karnataka 560034<br/>India</p>
+          </div>
+        </div>
+
+        <!-- Hours -->
+        <div class="info-card">
+          <div class="icon-box">🕐</div>
+          <div class="text">
+            <h3>Working Hours</h3>
+            <p>Monday – Saturday<br/>9:00 AM – 6:00 PM IST</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Contact Form -->
+      <div class="form-card">
+        <h2>Send Us a Message</h2>
+        <p class="sub">Fill out the form below and we'll get back to you shortly.</p>
+        <form id="contactForm" onsubmit="handleSubmit(event)">
+          <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" placeholder="e.g. Ravi Kumar" required/>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" placeholder="you@example.com" required/>
+          </div>
+          <div class="form-group">
+            <label>Phone (optional)</label>
+            <input type="tel" placeholder="+91 XXXXX XXXXX"/>
+          </div>
+          <div class="form-group">
+            <label>Subject</label>
+            <select>
+              <option value="">Select a topic…</option>
+              <option>Buying a Printer</option>
+              <option>Renting a Printer</option>
+              <option>Selling / Listing</option>
+              <option>Payment Issue</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea placeholder="Describe your query in detail…" required></textarea>
+          </div>
+          <button type="submit" class="btn-submit">Send Message</button>
+          <div class="success-msg" id="successMsg">✅ Message sent! We'll get back to you soon.</div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">🖨️ Printer Hub</div>
+        <p>The trusted marketplace for buying and renting printers. Connecting sellers and buyers with zero hassle since 2024.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/printers/">Browse Printers</a></li>
+          <li><a href="/about/">About Us</a></li>
+          <li><a href="/contact/">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Account</h4>
+        <ul>
+          <li><a href="/login/">Login</a></li>
+          <li><a href="/signup/">Sign Up</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact Us</h4>
+        <ul>
+          <li>📍 42 Tech Park, Bangalore</li>
+          <li><a href="https://wa.me/919182829546" target="_blank" style="color:#94a3b8;text-decoration:none;">💬 +91 91828 29546</a></li>
+          <li>✉️ support@printerhub.in</li>
+        </ul>
+      </div>
+    </div>
+    <hr class="footer-divider"/>
+    <div class="footer-bottom">
+      <p>© 2026 Printer Hub. All rights reserved.</p>
+      <p style="margin-top:6px;">Made by Ajay</p>
+    </div>
+  </div>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      document.getElementById('successMsg').style.display = 'block';
+      e.target.reset();
+    }
+  </script>
+
+
+  <!-- WhatsApp Float -->
+  <a href="https://wa.me/919182829546" target="_blank" title="Chat on WhatsApp" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;justify-content:center;width:58px;height:58px;background:#25d366;border-radius:50%;box-shadow:0 4px 18px rgba(37,211,102,0.5);text-decoration:none;font-size:30px;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.13)';this.style.boxShadow='0 6px 24px rgba(37,211,102,0.65)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(37,211,102,0.5)'">💬</a>
+
+</body>
+</html>

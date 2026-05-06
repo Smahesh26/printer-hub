@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat - Printer Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: white;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .peer {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .btn-light {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .chat-wrap {
+      width: min(980px, 100%);
+      margin: 18px auto;
+      padding: 0 14px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .context {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+
+    .thread {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+      padding: 14px;
+      min-height: 360px;
+      max-height: 58vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bubble {
+      max-width: 74%;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      line-height: 1.4;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06);
+    }
+
+    .mine {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .theirs {
+      align-self: flex-start;
+      background: #f8fafc;
+      color: #0f172a;
+      border: 1px solid #e2e8f0;
+      border-bottom-left-radius: 4px;
+    }
+
+    .meta {
+      margin-top: 6px;
+      font-size: 11px;
+      opacity: 0.85;
+    }
+
+    .composer {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .composer textarea {
+      width: 100%;
+      resize: vertical;
+      min-height: 54px;
+      max-height: 150px;
+      border: 1.5px solid #dbe3ef;
+      border-radius: 10px;
+      padding: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .composer textarea:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+
+    .send-btn {
+      border: none;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      font-weight: 700;
+      border-radius: 9px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .empty {
+      text-align: center;
+      margin: auto;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      .bubble {
+        max-width: 90%;
+      }
+
+      .composer {
+        grid-template-columns: 1fr;
+      }
+
+      .send-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="peer">💬 Chat with {{ other_user.username }}</div>
+    <div class="actions">
+      <a class="btn btn-light" href="/inbox/">← Inbox</a>
+      {% if user.profile.user_type == 'seller' %}
+        <a class="btn btn-light" href="/seller/">Dashboard</a>
+      {% else %}
+        <a class="btn btn-light" href="/dashboard/">Dashboard</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="chat-wrap">
+    {% if selected_printer %}
+      <div class="context">
+        Talking about: <strong>{{ selected_printer.name }}</strong> ({{ selected_printer.model }})
+      </div>
+    {% endif %}
+
+    <div class="thread" id="thread">
+      {% if chat_messages %}
+        {% for msg in chat_messages %}
+          <div class="bubble {% if msg.sender_id == request.user.id %}mine{% else %}theirs{% endif %}">
+            <div>{{ msg.body }}</div>
+            <div class="meta">{{ msg.created_at|date:'M d, h:i A' }}</div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty">No messages yet. Start the conversation.</div>
+      {% endif %}
+    </div>
+
+    <form method="POST" class="composer">
+      {% csrf_token %}
+      {% if selected_printer %}
+        <input type="hidden" name="printer_id" value="{{ selected_printer.id }}">
+      {% endif %}
+      <textarea name="body" placeholder="Type your message..." required></textarea>
+      <button type="submit" class="send-btn">Send</button>
+    </form>
+  </div>
+
+  <script>
+    const thread = document.getElementById('thread');
+    thread.scrollTop = thread.scrollHeight;
+  </script>
+
+  <!-- WhatsApp Float -->
+  <a href="https://wa.me/919182829546" target="_blank" title="Chat on WhatsApp" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;justify-content:center;width:58px;height:58px;background:#25d366;border-radius:50%;box-shadow:0 4px 18px rgba(37,211,102,0.5);text-decoration:none;font-size:30px;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.13)';this.style.boxShadow='0 6px 24px rgba(37,211,102,0.65)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(37,211,102,0.5)'">💬</a>
+
+</body>
+</html>

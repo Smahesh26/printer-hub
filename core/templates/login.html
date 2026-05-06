@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Login – Printer Hub</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+	<style>
+		*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+		body {
+			font-family: 'Inter', sans-serif;
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%);
+		}
+
+		.card {
+			background: #ffffff;
+			border-radius: 16px;
+			padding: 44px 40px;
+			width: 100%;
+			max-width: 420px;
+			box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+		}
+
+		.brand {
+			text-align: center;
+			margin-bottom: 28px;
+		}
+
+		.brand .logo {
+			font-size: 22px;
+			font-weight: 700;
+			color: #2563eb;
+		}
+
+		.brand h2 {
+			font-size: 24px;
+			color: #1e293b;
+			margin-top: 6px;
+			font-weight: 600;
+		}
+
+		.brand p {
+			font-size: 14px;
+			color: #64748b;
+			margin-top: 4px;
+		}
+
+		.error-box {
+			background: #fef2f2;
+			border: 1px solid #fca5a5;
+			color: #b91c1c;
+			border-radius: 8px;
+			padding: 10px 14px;
+			font-size: 13px;
+			margin-bottom: 18px;
+		}
+
+		.form-group {
+			margin-bottom: 18px;
+		}
+
+		label {
+			display: block;
+			font-size: 13px;
+			font-weight: 600;
+			color: #374151;
+			margin-bottom: 6px;
+		}
+
+		input {
+			width: 100%;
+			padding: 11px 14px;
+			border: 1.5px solid #d1d5db;
+			border-radius: 8px;
+			font-size: 14px;
+			color: #1e293b;
+			outline: none;
+			transition: border-color 0.2s, box-shadow 0.2s;
+			font-family: 'Inter', sans-serif;
+		}
+
+		input:focus {
+			border-color: #2563eb;
+			box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+		}
+
+		.btn-primary {
+			width: 100%;
+			padding: 12px;
+			background: linear-gradient(135deg, #2563eb, #6d28d9);
+			color: white;
+			border: none;
+			border-radius: 8px;
+			font-size: 15px;
+			font-weight: 600;
+			cursor: pointer;
+			margin-top: 6px;
+			transition: opacity 0.2s;
+			font-family: 'Inter', sans-serif;
+		}
+
+		.btn-primary:hover { opacity: 0.9; }
+
+		.footer-text {
+			text-align: center;
+			margin-top: 20px;
+			font-size: 13px;
+			color: #64748b;
+		}
+
+		.footer-text a {
+			color: #2563eb;
+			text-decoration: none;
+			font-weight: 600;
+		}
+	</style>
+</head>
+<body>
+	<div class="card">
+		<div class="brand">
+			<div class="logo">🖨️ Printer Hub</div>
+			<h2>Welcome back</h2>
+			<p>Sign in to your account</p>
+		</div>
+
+		{% if error %}
+		<div class="error-box">{{ error }}</div>
+		{% endif %}
+
+		<form method="POST">
+			{% csrf_token %}
+			<div class="form-group">
+				<label for="username">Username</label>
+				<input type="text" id="username" name="username" placeholder="Enter your username" required>
+			</div>
+			<div class="form-group">
+				<label for="password">Password</label>
+				<input type="password" id="password" name="password" placeholder="Enter your password" required>
+			</div>
+			<button type="submit" class="btn-primary">Sign In</button>
+		</form>
+
+		<p class="footer-text">
+			Don't have an account? <a href="/signup/">Create one</a>
+		</p>
+	</div>
+
+  <!-- WhatsApp Float -->
+  <a href="https://wa.me/919182829546" target="_blank" title="Chat on WhatsApp" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;justify-content:center;width:58px;height:58px;background:#25d366;border-radius:50%;box-shadow:0 4px 18px rgba(37,211,102,0.5);text-decoration:none;font-size:30px;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.13)';this.style.boxShadow='0 6px 24px rgba(37,211,102,0.65)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(37,211,102,0.5)'">💬</a>
+
+</body>
+</html>

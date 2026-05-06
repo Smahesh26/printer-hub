@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Add Printer – Printer Hub</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+	<style>
+		*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+		body {
+			font-family: 'Inter', sans-serif;
+			background: #f1f5f9;
+			color: #1e293b;
+			min-height: 100vh;
+		}
+
+		.navbar {
+			background: white;
+			padding: 16px 40px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+		}
+
+		.logo {
+			font-size: 20px;
+			font-weight: 700;
+			color: #2563eb;
+			text-decoration: none;
+		}
+
+		.nav-links { display: flex; align-items: center; gap: 12px; }
+
+		.nav-btn {
+			padding: 8px 18px;
+			border-radius: 8px;
+			font-size: 14px;
+			font-weight: 600;
+			text-decoration: none;
+			color: #fff !important;
+			background: linear-gradient(135deg, #4f46e5, #7c3aed);
+		}
+
+		.btn-back { background: #eff6ff; color: #2563eb; }
+		.btn-logout { background: #fee2e2; color: #b91c1c; }
+
+		.page-wrap {
+			max-width: 580px;
+			margin: 50px auto;
+			padding: 0 20px;
+		}
+
+		.card {
+			background: white;
+			border-radius: 16px;
+			padding: 40px;
+			box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+		}
+
+		.card h2 {
+			font-size: 22px;
+			font-weight: 700;
+			margin-bottom: 6px;
+		}
+
+		.card .subtitle {
+			font-size: 14px;
+			color: #64748b;
+			margin-bottom: 28px;
+		}
+
+		.form-group { margin-bottom: 18px; }
+
+		label {
+			display: block;
+			font-size: 13px;
+			font-weight: 600;
+			color: #374151;
+			margin-bottom: 6px;
+		}
+
+		input, select {
+			width: 100%;
+			padding: 11px 14px;
+			border: 1.5px solid #d1d5db;
+			border-radius: 8px;
+			font-size: 14px;
+			color: #1e293b;
+			outline: none;
+			transition: border-color 0.2s, box-shadow 0.2s;
+			font-family: 'Inter', sans-serif;
+			background: white;
+		}
+
+		input:focus, select:focus {
+			border-color: #2563eb;
+			box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+		}
+
+		.row { display: flex; gap: 16px; }
+		.row .form-group { flex: 1; }
+
+		.btn-submit {
+			width: 100%;
+			padding: 13px;
+			background: linear-gradient(135deg, #2563eb, #6d28d9);
+			color: white;
+			border: none;
+			border-radius: 8px;
+			font-size: 15px;
+			font-weight: 600;
+			cursor: pointer;
+			margin-top: 8px;
+			font-family: 'Inter', sans-serif;
+			transition: opacity 0.2s;
+		}
+
+		.btn-submit:hover { opacity: 0.9; }
+	</style>
+</head>
+<body>
+
+	<nav class="navbar">
+		<a href="/" class="logo">🖨️ Printer Hub</a>
+		<div class="nav-links">
+			<a href="/seller/" class="nav-btn btn-back">← My Listings</a>
+			<a href="/logout/" class="nav-btn btn-logout">Logout</a>
+		</div>
+	</nav>
+
+	<div class="page-wrap">
+		<div class="card">
+			<h2>List a Printer</h2>
+			<p class="subtitle">Fill in the details to publish your printer listing</p>
+
+			<form method="POST" enctype="multipart/form-data">
+				{% csrf_token %}
+
+				<div class="row">
+					<div class="form-group">
+						<label for="name">Printer Name</label>
+						<input type="text" id="name" name="name" placeholder="e.g. HP LaserJet Pro" required>
+					</div>
+					<div class="form-group">
+						<label for="model">Model</label>
+						<input type="text" id="model" name="model" placeholder="e.g. M404dn" required>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="form-group">
+						<label for="type">Listing Type</label>
+						<select id="type" name="type" required>
+							<option value="sale">For Sale</option>
+							<option value="rent">For Rent</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="price">Price (₹)</label>
+						<input type="number" id="price" name="price" min="0" step="0.01" placeholder="0.00" required>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="image">Printer Image</label>
+					<input type="file" id="image" name="image" accept="image/*" required>
+				</div>
+
+				<button type="submit" class="btn-submit">Publish Listing</button>
+			</form>
+		</div>
+	</div>
+
+
+  <!-- WhatsApp Float -->
+  <a href="https://wa.me/919182829546" target="_blank" title="Chat on WhatsApp" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;justify-content:center;width:58px;height:58px;background:#25d366;border-radius:50%;box-shadow:0 4px 18px rgba(37,211,102,0.5);text-decoration:none;font-size:30px;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.13)';this.style.boxShadow='0 6px 24px rgba(37,211,102,0.65)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(37,211,102,0.5)'">💬</a>
+
+</body>
+</html>
