@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ title }} - Printer Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%);
+      padding: 24px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 40px 34px;
+      width: 100%;
+      max-width: 430px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .brand .logo {
+      font-size: 22px;
+      font-weight: 700;
+      color: #2563eb;
+      margin-bottom: 4px;
+    }
+
+    .brand h2 {
+      font-size: 23px;
+      color: #1e293b;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .brand p {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .error-box {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #b91c1c;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+
+    .msg-box {
+      background: #ecfdf5;
+      border: 1px solid #86efac;
+      color: #166534;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      text-align: center;
+      color: #1e293b;
+      outline: none;
+      margin-bottom: 14px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #2563eb, #6d28d9);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 2px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 14px;
+      font-size: 13px;
+    }
+
+    .footer-links a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <div class="logo">Printer Hub</div>
+      <h2>{{ title }}</h2>
+      <p>{{ subtitle }}</p>
+    </div>
+
+    {% if error %}
+      <div class="error-box">{{ error }}</div>
+    {% endif %}
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="msg-box">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+      <label for="otp">6-digit OTP</label>
+      <input id="otp" name="otp" type="text" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="Enter OTP" required>
+      <button type="submit" class="btn-primary">Verify OTP</button>
+    </form>
+
+    <div class="footer-links">
+      <a href="{{ resend_url }}">Resend OTP</a>
+      <a href="/login/">Back to Login</a>
+    </div>
+  </div>
+</body>
+</html>

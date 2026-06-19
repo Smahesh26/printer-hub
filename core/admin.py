@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
-from .models import Profile, Printer, Order, ChatMessage
+from .models import Profile, Printer, Order, ChatMessage, EmailOTP
 
 
 class ProfileInline(admin.StackedInline):
@@ -63,8 +63,8 @@ class PrinterAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-	list_display = ('id', 'buyer', 'printer', 'ordered_at')
-	list_filter = ('ordered_at',)
+	list_display = ('id', 'buyer', 'printer', 'payment_method', 'payment_status', 'ordered_at')
+	list_filter = ('payment_method', 'payment_status', 'ordered_at')
 	search_fields = ('buyer__username', 'printer__name')
 
 
@@ -73,3 +73,10 @@ class ChatMessageAdmin(admin.ModelAdmin):
 	list_display = ('sender', 'receiver', 'printer', 'is_read', 'created_at')
 	list_filter = ('is_read', 'created_at')
 	search_fields = ('sender__username', 'receiver__username', 'body')
+
+
+@admin.register(EmailOTP)
+class EmailOTPAdmin(admin.ModelAdmin):
+	list_display = ('email', 'purpose', 'user', 'code', 'is_used', 'expires_at', 'created_at')
+	list_filter = ('purpose', 'is_used', 'created_at')
+	search_fields = ('email', 'user__username')

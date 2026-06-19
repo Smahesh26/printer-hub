@@ -716,6 +716,9 @@
               <th>Printer</th>
               <th>Type</th>
               <th>Price</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Txn Ref</th>
               <th>Date</th>
               <th>Action</th>
             </tr>
@@ -726,6 +729,9 @@
               <td>{{ o.printer.name }} ({{ o.printer.model }})</td>
               <td>{{ o.printer.get_type_display }}</td>
               <td>&#8377;{{ o.printer.price }}</td>
+              <td>{{ o.get_payment_method_display }}</td>
+              <td>{{ o.get_payment_status_display }}</td>
+              <td>{{ o.payment_reference|default:'-' }}</td>
               <td>{{ o.ordered_at|date:'M d, Y h:i A' }}</td>
               <td><a href="/chat/{{ o.printer.seller.id }}/?printer={{ o.printer.id }}" class="btn-message">Message Seller</a></td>
             </tr>

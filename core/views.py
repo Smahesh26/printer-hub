@@ -1,14 +1,81 @@
 from django.shortcuts import render, redirect
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.mail import send_mail
 from django.db import IntegrityError, transaction
 from django.db.models import Q
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal, InvalidOperation
-from .models import Profile, Printer, Order, ChatMessage
+from datetime import timedelta
+import random
+import razorpay
+
+from .models import Profile, Printer, Order, ChatMessage, EmailOTP
 from .decorators import buyer_required, seller_required
+
+
+OTP_EXPIRY_MINUTES = 10
+
+
+def _generate_otp_code():
+    return f"{random.randint(100000, 999999)}"
+
+
+def _send_otp_email(email, code, purpose):
+    purpose_label = 'login' if purpose == 'login' else 'signup'
+    subject = f'Printer Hub OTP for {purpose_label}'
+    message = (
+        f'Your Printer Hub OTP is: {code}\n\n'
+        f'This OTP will expire in {OTP_EXPIRY_MINUTES} minutes.\n'
+        'Do not share this code with anyone.'
+    )
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@printerhub.local')
+    send_mail(subject, message, from_email, [email], fail_silently=False)
+
+
+def _create_and_send_otp(*, email, purpose, user=None):
+    code = _generate_otp_code()
+    expires_at = timezone.now() + timedelta(minutes=OTP_EXPIRY_MINUTES)
+    otp = EmailOTP.objects.create(
+        user=user,
+        email=email,
+        purpose=purpose,
+        code=code,
+        expires_at=expires_at,
+    )
+    _send_otp_email(email, code, purpose)
+    return otp
+
+
+def _verify_otp(*, email, purpose, submitted_code, user=None):
+    otp_qs = EmailOTP.objects.filter(
+        email=email,
+        purpose=purpose,
+        is_used=False,
+    )
+    if user is not None:
+        otp_qs = otp_qs.filter(user=user)
+
+    otp = otp_qs.order_by('-created_at').first()
+    if not otp:
+        return False
+
+    if not otp.is_valid(submitted_code):
+        return False
+
+    otp.is_used = True
+    otp.save(update_fields=['is_used'])
+    return True
+
+
+def _razorpay_client():
+    return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
 
 # Home page
@@ -85,26 +152,27 @@ def signup(request):
             'user_type': user_type if user_type in ('buyer', 'seller') else 'buyer',
         }
 
-        if not username or not password:
-            error = 'Username and password are required.'
+        if not username or not email or not password:
+            error = 'Username, email, and password are required.'
+        elif User.objects.filter(email__iexact=email).exists():
+            error = 'Email already registered. Please use another email.'
         elif password != confirm:
             error = 'Passwords do not match.'
         elif User.objects.filter(username__iexact=username).exists():
             error = 'Username already taken. Please choose another.'
         else:
             try:
-                with transaction.atomic():
-                    user = User.objects.create_user(
-                        username=username,
-                        email=email,
-                        password=password,
-                    )
-                    Profile.objects.create(user=user, user_type=form_data['user_type'])
-            except IntegrityError:
-                error = 'Username already taken. Please choose another.'
+                _create_and_send_otp(email=email, purpose='signup')
+            except Exception:
+                error = 'Unable to send OTP email right now. Please try again.'
             else:
-                login(request, user)
-                return _redirect_by_role(user)
+                request.session['pending_signup'] = {
+                    'username': username,
+                    'email': email,
+                    'password': password,
+                    'user_type': form_data['user_type'],
+                }
+                return redirect('verify_signup_otp')
 
     return render(request, 'signup.html', {'error': error, 'form_data': form_data})
 
@@ -120,8 +188,16 @@ def login_view(request):
         password = request.POST.get('password', '')
         user = authenticate(request, username=username, password=password)
         if user:
-            login(request, user)
-            return _redirect_by_role(user)
+            if not user.email:
+                error = 'Your account has no email. Contact admin to add email for OTP login.'
+            else:
+                try:
+                    _create_and_send_otp(email=user.email, purpose='login', user=user)
+                except Exception:
+                    error = 'Unable to send OTP email right now. Please try again.'
+                else:
+                    request.session['pending_login_user_id'] = user.id
+                    return redirect('verify_login_otp')
         else:
             error = 'Invalid username or password.'
 
@@ -132,6 +208,124 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+
+def verify_signup_otp(request):
+    pending_signup = request.session.get('pending_signup')
+    if not pending_signup:
+        messages.warning(request, 'Signup session expired. Please register again.')
+        return redirect('signup')
+
+    error = None
+    if request.method == 'POST':
+        code = request.POST.get('otp', '').strip()
+        if not code:
+            error = 'Please enter the OTP sent to your email.'
+        else:
+            is_valid = _verify_otp(
+                email=pending_signup['email'],
+                purpose='signup',
+                submitted_code=code,
+            )
+            if not is_valid:
+                error = 'Invalid or expired OTP. Please try again.'
+            else:
+                try:
+                    with transaction.atomic():
+                        user = User.objects.create_user(
+                            username=pending_signup['username'],
+                            email=pending_signup['email'],
+                            password=pending_signup['password'],
+                        )
+                        Profile.objects.create(user=user, user_type=pending_signup['user_type'])
+                except IntegrityError:
+                    error = 'Username or email already exists. Please sign up again.'
+                else:
+                    request.session.pop('pending_signup', None)
+                    login(request, user)
+                    return _redirect_by_role(user)
+
+    return render(request, 'verify_otp.html', {
+        'title': 'Verify Signup OTP',
+        'subtitle': f"Enter the OTP sent to {pending_signup['email']}",
+        'error': error,
+        'resend_url': '/otp/resend-signup/',
+    })
+
+
+def resend_signup_otp(request):
+    pending_signup = request.session.get('pending_signup')
+    if not pending_signup:
+        messages.warning(request, 'Signup session expired. Please register again.')
+        return redirect('signup')
+
+    try:
+        _create_and_send_otp(email=pending_signup['email'], purpose='signup')
+    except Exception:
+        messages.error(request, 'Unable to resend OTP right now. Please try again.')
+    else:
+        messages.success(request, 'A new OTP has been sent to your email.')
+    return redirect('verify_signup_otp')
+
+
+def verify_login_otp(request):
+    pending_user_id = request.session.get('pending_login_user_id')
+    if not pending_user_id:
+        messages.warning(request, 'Login session expired. Please login again.')
+        return redirect('login')
+
+    user = User.objects.filter(id=pending_user_id).first()
+    if not user or not user.email:
+        request.session.pop('pending_login_user_id', None)
+        messages.warning(request, 'Login session is invalid. Please login again.')
+        return redirect('login')
+
+    error = None
+    if request.method == 'POST':
+        code = request.POST.get('otp', '').strip()
+        if not code:
+            error = 'Please enter the OTP sent to your email.'
+        else:
+            is_valid = _verify_otp(
+                email=user.email,
+                purpose='login',
+                submitted_code=code,
+                user=user,
+            )
+            if not is_valid:
+                error = 'Invalid or expired OTP. Please try again.'
+            else:
+                request.session.pop('pending_login_user_id', None)
+                login(request, user)
+                return _redirect_by_role(user)
+
+    return render(request, 'verify_otp.html', {
+        'title': 'Verify Login OTP',
+        'subtitle': f"Enter the OTP sent to {user.email}",
+        'error': error,
+        'resend_url': '/otp/resend-login/',
+    })
+
+
+def resend_login_otp(request):
+    pending_user_id = request.session.get('pending_login_user_id')
+    if not pending_user_id:
+        messages.warning(request, 'Login session expired. Please login again.')
+        return redirect('login')
+
+    user = User.objects.filter(id=pending_user_id).first()
+    if not user or not user.email:
+        request.session.pop('pending_login_user_id', None)
+        messages.warning(request, 'Login session is invalid. Please login again.')
+        return redirect('login')
+
+    try:
+        _create_and_send_otp(email=user.email, purpose='login', user=user)
+    except Exception:
+        messages.error(request, 'Unable to resend OTP right now. Please try again.')
+    else:
+        messages.success(request, 'A new OTP has been sent to your email.')
+    return redirect('verify_login_otp')
 
 
 # Helper: redirect after login based on role
@@ -222,11 +416,6 @@ def seller_dashboard(request):
 @seller_required
 def add_printer(request):
     if request.method == 'POST':
-        payment_qr = request.FILES.get('payment_qr')
-        if not payment_qr:
-            messages.error(request, 'Please upload your payment QR code for this listing.')
-            return render(request, 'add_printer.html')
-
         Printer.objects.create(
             seller=request.user,
             name=request.POST['name'],
@@ -234,7 +423,6 @@ def add_printer(request):
             type=request.POST['type'],
             price=request.POST['price'],
             image=request.FILES['image'],
-            payment_qr=payment_qr,
         )
         messages.success(request, 'Printer added successfully.')
         return redirect('seller_dashboard')
@@ -242,18 +430,130 @@ def add_printer(request):
     return render(request, 'add_printer.html')
 
 
-# Payment page (Buyer only) — shows UPI QR before confirming order
+# Payment page (Buyer only)
 @buyer_required
 def pay_order(request, printer_id):
     printer = get_object_or_404(Printer, id=printer_id)
-    if not printer.payment_qr:
-        messages.error(request, 'Seller QR code is not available for this printer yet.')
+    payment_methods = [
+        ('upi', 'UPI'),
+        ('card', 'Credit / Debit Card'),
+        ('netbanking', 'Net Banking'),
+    ]
+
+    amount_paise = int(printer.price * Decimal('100'))
+    receipt_id = f"ph-{request.user.id}-{printer.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+    razorpay_order = None
+
+    try:
+        client = _razorpay_client()
+        razorpay_order = client.order.create({
+            'amount': amount_paise,
+            'currency': 'INR',
+            'receipt': receipt_id,
+            'payment_capture': 1,
+            'notes': {
+                'buyer_id': str(request.user.id),
+                'printer_id': str(printer.id),
+            },
+        })
+    except Exception:
+        messages.error(request, 'Unable to initialize Razorpay payment right now. Please try again.')
+
+    return render(request, 'payment.html', {
+        'printer': printer,
+        'payment_methods': payment_methods,
+        'razorpay_key_id': settings.RAZORPAY_KEY_ID,
+        'razorpay_order_id': razorpay_order['id'] if razorpay_order else '',
+        'razorpay_callback_url': request.build_absolute_uri(
+            reverse('verify_razorpay_payment', args=[printer.id])
+        ),
+        'amount_paise': amount_paise,
+        'buyer_name': request.user.get_full_name() or request.user.username,
+        'buyer_email': request.user.email,
+    })
+
+
+@csrf_exempt
+def verify_razorpay_payment(request, printer_id):
+    if request.method != 'POST':
+        return redirect('pay_order', printer_id=printer_id)
+
+    printer = get_object_or_404(Printer, id=printer_id)
+    razorpay_payment_id = request.POST.get('razorpay_payment_id', '').strip()
+    razorpay_order_id = request.POST.get('razorpay_order_id', '').strip()
+    razorpay_signature = request.POST.get('razorpay_signature', '').strip()
+
+    if not razorpay_payment_id or not razorpay_order_id or not razorpay_signature:
+        messages.error(request, 'Payment verification data is incomplete. Please try again.')
+        return redirect('pay_order', printer_id=printer.id)
+
+    try:
+        client = _razorpay_client()
+        client.utility.verify_payment_signature({
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature,
+        })
+    except Exception:
+        messages.error(request, 'Razorpay payment verification failed. Please try again.')
+        return redirect('pay_order', printer_id=printer.id)
+
+    razorpay_order = None
+    try:
+        razorpay_order = client.order.fetch(razorpay_order_id)
+    except Exception:
+        messages.error(request, 'Unable to fetch Razorpay order details. Please try again.')
+        return redirect('pay_order', printer_id=printer.id)
+
+    notes = razorpay_order.get('notes', {}) if isinstance(razorpay_order, dict) else {}
+    buyer_id = notes.get('buyer_id')
+    noted_printer_id = notes.get('printer_id')
+    if str(noted_printer_id) != str(printer.id):
+        messages.error(request, 'Payment details do not match this printer.')
         return redirect('dashboard')
 
-    if request.method == 'POST':
-        order = Order.objects.create(buyer=request.user, printer=printer)
+    buyer = User.objects.filter(id=buyer_id).first()
+    if not buyer:
+        messages.error(request, 'Unable to resolve buyer account for this payment.')
+        return redirect('login')
+
+    existing_order = Order.objects.filter(
+        buyer=buyer,
+        printer=printer,
+        payment_reference=razorpay_payment_id,
+    ).first()
+    if existing_order:
+        if request.user.is_authenticated and request.user.id == buyer.id:
+            return redirect('order_confirmation', order_id=existing_order.id)
+        return redirect('/dashboard/?tab=orders')
+
+    payment_method = 'upi'
+    payment_status = 'paid'
+    try:
+        payment_data = client.payment.fetch(razorpay_payment_id)
+        method_map = {
+            'upi': 'upi',
+            'card': 'card',
+            'netbanking': 'netbanking',
+        }
+        payment_method = method_map.get(payment_data.get('method', ''), 'upi')
+        gateway_status = payment_data.get('status', '').lower()
+        if gateway_status and gateway_status not in {'captured', 'authorized'}:
+            payment_status = 'pending'
+    except Exception:
+        # Keep fallback values when payment fetch is unavailable.
+        pass
+
+    order = Order.objects.create(
+        buyer=buyer,
+        printer=printer,
+        payment_method=payment_method,
+        payment_status=payment_status,
+        payment_reference=razorpay_payment_id,
+    )
+    if request.user.is_authenticated and request.user.id == buyer.id:
         return redirect('order_confirmation', order_id=order.id)
-    return render(request, 'payment.html', {'printer': printer})
+    return redirect('/dashboard/?tab=orders')
 
 
 # Create order (Buyer only)
@@ -266,6 +566,8 @@ def create_order(request, printer_id):
     order = Order.objects.create(
         buyer=request.user,
         printer=printer,
+        payment_method='upi',
+        payment_status='paid',
     )
     return redirect('order_confirmation', order_id=order.id)
 

@@ -3,24 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pay via UPI - Printer Hub</title>
+  <title>Redirecting to Razorpay - Printer Hub</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', sans-serif;
-      background: #f0f4ff;
+      background: #eef2ff;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 18px;
     }
     .card {
       background: #fff;
       border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(79,70,229,0.10);
-      padding: 40px 36px;
-      max-width: 420px;
+      box-shadow: 0 8px 30px rgba(79, 70, 229, 0.14);
+      padding: 30px;
+      max-width: 560px;
       width: 100%;
       text-align: center;
     }
@@ -28,135 +29,142 @@
       font-size: 22px;
       font-weight: 700;
       color: #4f46e5;
-      margin-bottom: 4px;
-    }
-    .brand span { color: #6366f1; }
-    h2 {
-      font-size: 20px;
-      font-weight: 600;
-      color: #1e293b;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
     .subtitle {
       font-size: 14px;
       color: #64748b;
-      margin-bottom: 24px;
+      margin-bottom: 18px;
     }
-    .printer-info {
+    .printer-box {
       background: #f8faff;
       border: 1px solid #e0e7ff;
       border-radius: 10px;
-      padding: 14px 18px;
-      margin-bottom: 24px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
       text-align: left;
     }
-    .printer-info .label { font-size: 12px; color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
-    .printer-info .value { font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 2px; }
+    .label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .value {
+      font-size: 16px;
+      color: #1e293b;
+      font-weight: 700;
+      margin-top: 4px;
+    }
     .amount {
       font-size: 28px;
-      font-weight: 700;
-      color: #4f46e5;
+      font-weight: 800;
+      color: #4338ca;
       margin: 4px 0 18px;
     }
-    .qr-wrap {
-      background: #f8faff;
-      border: 2px dashed #c7d2fe;
-      border-radius: 12px;
-      padding: 20px;
-      display: inline-block;
-      margin-bottom: 20px;
-    }
-    .qr-wrap img {
-      width: 220px;
-      height: 220px;
-      object-fit: contain;
+    .hint {
+      font-size: 12px;
+      color: #334155;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
       border-radius: 8px;
-    }
-    .qr-hint {
-      font-size: 13px;
-      color: #6366f1;
-      font-weight: 500;
-      margin-bottom: 28px;
-    }
-    .steps {
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      line-height: 1.5;
       text-align: left;
-      background: #fef9c3;
-      border: 1px solid #fde047;
-      border-radius: 10px;
-      padding: 14px 18px;
-      margin-bottom: 28px;
-      font-size: 13px;
-      color: #78350f;
-      line-height: 1.8;
     }
-    .steps strong { display: block; margin-bottom: 4px; font-size: 13px; }
-    form button {
+    .pay-btn {
       width: 100%;
-      padding: 14px;
+      padding: 13px;
       background: linear-gradient(135deg, #4f46e5, #7c3aed);
       color: #fff;
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      transition: opacity 0.2s;
     }
-    form button:hover { opacity: 0.9; }
+    .pay-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
     .back-link {
       display: inline-block;
-      margin-top: 16px;
+      margin-top: 12px;
       font-size: 13px;
-      color: #6366f1;
+      color: #4f46e5;
       text-decoration: none;
     }
-    .back-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="brand">Printer<span>Hub</span></div>
-    <h2>Complete Your Payment</h2>
-    <p class="subtitle">Scan the UPI QR code below to pay</p>
+    <div class="brand">Printer Hub</div>
+    <p class="subtitle">Redirecting to Razorpay secure checkout...</p>
 
-    <div class="printer-info">
+    <div class="printer-box">
       <div class="label">Printer</div>
-      <div class="value">{{ printer.name }} — {{ printer.model }}</div>
+      <div class="value">{{ printer.name }} - {{ printer.model }}</div>
     </div>
 
-    <div class="label" style="font-size:12px;color:#94a3b8;font-weight:500;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Amount to Pay</div>
+    <div class="label">Amount to Pay</div>
     <div class="amount">&#8377;{{ printer.price }}</div>
 
-    <div class="qr-wrap">
-      {% if printer.payment_qr %}
-        <img src="{{ printer.payment_qr.url }}" alt="Seller UPI QR Code" />
-      {% endif %}
+    <div class="hint">
+      If the Razorpay popup is blocked by browser, click the button below to open payment gateway manually.
     </div>
 
-    <p class="qr-hint">Scan with PhonePe / GPay / Paytm / any UPI app</p>
-
-    <div class="steps">
-      <strong>How to pay:</strong>
-      1. Open any UPI app on your phone<br/>
-      2. Tap "Scan QR" and scan the code above<br/>
-      3. Enter the exact amount shown<br/>
-      4. Complete the payment, then click below
-    </div>
-
-    {% if printer.payment_qr %}
-      <form method="POST">
-        {% csrf_token %}
-        <button type="submit">&#10003; I Have Paid — Confirm Order</button>
-      </form>
-    {% else %}
-      <p class="subtitle" style="margin-bottom:0;color:#b91c1c;">Seller payment QR is unavailable for this listing.</p>
-    {% endif %}
+    <button id="rzp-pay-btn" class="pay-btn" {% if not razorpay_order_id %}disabled{% endif %}>Open Razorpay Checkout</button>
 
     <a href="/dashboard/" class="back-link">&#8592; Back to Dashboard</a>
   </div>
 
-  <!-- WhatsApp Float -->
-  <a href="https://wa.me/919182829546" target="_blank" title="Chat on WhatsApp" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;justify-content:center;width:58px;height:58px;background:#25d366;border-radius:50%;box-shadow:0 4px 18px rgba(37,211,102,0.5);text-decoration:none;font-size:30px;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.13)';this.style.boxShadow='0 6px 24px rgba(37,211,102,0.65)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(37,211,102,0.5)'">💬</a>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    const payButton = document.getElementById('rzp-pay-btn');
 
+    function launchRazorpay() {
+      const options = {
+        key: '{{ razorpay_key_id }}',
+        amount: '{{ amount_paise }}',
+        currency: 'INR',
+        name: 'Printer Hub',
+        description: 'Payment for {{ printer.name }}',
+        order_id: '{{ razorpay_order_id }}',
+        prefill: {
+          name: '{{ buyer_name|escapejs }}',
+          email: '{{ buyer_email|default:""|escapejs }}'
+        },
+        notes: {
+          printer_id: '{{ printer.id }}',
+          buyer: '{{ request.user.username|escapejs }}'
+        },
+        callback_url: '{{ razorpay_callback_url|escapejs }}',
+        redirect: true,
+        modal: {
+          ondismiss: function () {
+            console.log('Payment popup closed.');
+          }
+        }
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        alert('Payment failed: ' + response.error.description);
+      });
+      rzp.open();
+    }
+
+    if (payButton && !payButton.disabled) {
+      payButton.addEventListener('click', launchRazorpay);
+      window.addEventListener('load', function () {
+        // Auto-open checkout to create direct gateway flow after printer selection.
+        setTimeout(launchRazorpay, 250);
+      });
+    }
+  </script>
+
+  <a href="https://wa.me/919182829546" target="_blank" title="Chat on WhatsApp" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;justify-content:center;width:58px;height:58px;background:#25d366;border-radius:50%;box-shadow:0 4px 18px rgba(37,211,102,0.5);text-decoration:none;font-size:30px;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.13)';this.style.boxShadow='0 6px 24px rgba(37,211,102,0.65)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(37,211,102,0.5)'">💬</a>
 </body>
 </html>

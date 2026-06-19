@@ -659,6 +659,9 @@
                 <th>Printer</th>
                 <th>Type</th>
                 <th>Amount</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Txn Ref</th>
                 <th>Ordered On</th>
               </tr>
             </thead>
@@ -678,6 +681,9 @@
                   </span>
                 </td>
                 <td class="price-col">&#8377;{{ o.printer.price }}</td>
+                <td>{{ o.get_payment_method_display }}</td>
+                <td>{{ o.get_payment_status_display }}</td>
+                <td>{{ o.payment_reference|default:'-' }}</td>
                 <td class="date-col">{{ o.ordered_at|date:"d M Y, h:i A" }}</td>
               </tr>
               {% endfor %}

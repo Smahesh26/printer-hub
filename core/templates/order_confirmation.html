@@ -168,6 +168,28 @@
         </div>
       </div>
 
+      <div class="row">
+        <div class="field">
+          <div class="label">Payment Method</div>
+          <div class="value">{{ order.get_payment_method_display }}</div>
+        </div>
+        <div class="field">
+          <div class="label">Payment Status</div>
+          <div class="value">{{ order.get_payment_status_display }}</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <div class="label">Transaction Reference</div>
+          <div class="value">{{ order.payment_reference|default:'Auto-generated' }}</div>
+        </div>
+        <div class="field">
+          <div class="label">Seller</div>
+          <div class="value">{{ order.printer.seller.username }}</div>
+        </div>
+      </div>
+
       <div class="actions">
         <a href="/dashboard/?tab=orders" class="btn btn-primary">View Order History</a>
         <a href="/" class="btn btn-light">Go Home</a>

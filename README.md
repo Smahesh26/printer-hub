@@ -1,6 +1,6 @@
 # Printer Hub - Setup Guide (Windows)
 
-This guide is for running the project on another PC.
+This guide explains how to run the project on another Windows PC.
 
 ## 1) Minimum Hardware Requirements
 
@@ -11,7 +11,7 @@ This guide is for running the project on another PC.
 
 ## 2) Software to Install
 
-Install these in order:
+Install the following in order:
 
 1. Python 3.12 (or newer)
 2. Git (recommended)
@@ -51,14 +51,14 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Then open in browser:
+Then open these URLs in your browser:
 
 - App: http://127.0.0.1:8000
 - Admin: http://127.0.0.1:8000/admin
 
 ## 5) Daily Run Commands
 
-Every time you want to start the app:
+Use these commands each time you want to start the app:
 
 ```powershell
 cd <path-to-printerhub>
@@ -98,7 +98,7 @@ pip install -r requirements.txt
 
 ### Port already in use
 
-If server says port is busy, run on another port:
+If the server says the port is busy, run on another port:
 
 ```powershell
 python manage.py runserver 8001
@@ -112,11 +112,42 @@ Re-apply migrations:
 python manage.py migrate
 ```
 
-### Static/media notes
+### Static and media notes
 
-- Static files are configured from `core/static`
+- Static files are configured from `core/static`.
 - Media uploads are served in development mode
+
+## 9) Email OTP Setup (Free)
+
+This project now supports email OTP for signup and login.
+
+By default, OTP emails are printed in the terminal (console backend), so no SMTP setup is required for local testing.
+
+To send real OTP emails for free, use a Gmail account with an App Password:
+
+1. Enable 2-Step Verification on your Gmail account.
+2. Generate an App Password from Google account security settings.
+3. Set these environment variables before running `python manage.py runserver`:
+
+```powershell
+$env:EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+$env:EMAIL_HOST = "smtp.gmail.com"
+$env:EMAIL_PORT = "587"
+$env:EMAIL_USE_TLS = "True"
+$env:EMAIL_HOST_USER = "yourgmail@gmail.com"
+$env:EMAIL_HOST_PASSWORD = "your_app_password"
+$env:DEFAULT_FROM_EMAIL = "Printer Hub <yourgmail@gmail.com>"
+```
+
+Then run the server and OTP emails will be delivered to user inbox.
+
+## 10) Payment Flow Note
+
+The payment page supports UPI, card, and net banking selection for a real-project style flow.
+It currently stores payment method and reference in the order for demonstration.
+
+For production, connect a real gateway (recommended: Razorpay test mode first, then live keys).
 
 ---
 
-If needed, share this entire file with your brother and ask him to follow section 4 exactly for first run.
+If needed, share this entire file with your brother and ask him to follow Section 4 exactly for the first run.
